@@ -65,25 +65,14 @@ update_status ModulePhysics::PostUpdate()
 	// On space bar press, create a circle on mouse position
 	if(App->input->GetKey(SDL_SCANCODE_1) == KEY_DOWN)
 	{
-		b2BodyDef body;
-		body.type = b2_dynamicBody;
-		float radius = PIXEL_TO_METERS(25);
-		body.position.Set(PIXEL_TO_METERS(App->input->GetMouseX()), PIXEL_TO_METERS(App->input->GetMouseY()));
-
-		b2Body* b = world->CreateBody(&body);
-
-		b2CircleShape shape;
-		shape.m_radius = radius;
-		b2FixtureDef fixture;
-		fixture.shape = &shape;
-
-		b->CreateFixture(&fixture);
+		CreateCircle(App->input->GetMouseX(), App->input->GetMouseY(), 25);
 	}
 
 	if(App->input->GetKey(SDL_SCANCODE_2) == KEY_DOWN)
 	{
 		// TODO 1: When pressing 2, create a box on the mouse position
-
+		CreateRectangle(App->input->GetMouseX(), App->input->GetMouseY(), 50, 50);
+		
 		// TODO 2: To have the box behave normally, set fixture's density to 1.0f
 	}
 
@@ -91,22 +80,51 @@ update_status ModulePhysics::PostUpdate()
 	{
 		// TODO 3: Create a chain shape using those vertices
 		// remember to convert them from pixels to meters!
-		/*
-		int points[24] = {
-			-38, 80,
-			-44, -54,
-			-16, -60,
-			-16, -17,
-			19, -19,
-			19, -79,
-			61, -77,
-			57, 73,
-			17, 78,
-			20, 16,
-			-25, 13,
-			-9, 72
+		
+		int rick_head[78] = {
+			-16, -75,
+			-15, -35,
+			-44, -38,
+			-27, -12,
+			-58, 2,
+			-27, 16,
+			-47, 28,
+			-26, 40,
+			-34, 50,
+			-18, 51,
+			-23, 62,
+			-12, 58,
+			-9, 63,
+			-3, 69,
+			4, 72,
+			14, 74,
+			27, 73,
+			35, 66,
+			40, 58,
+			41, 52,
+			46, 52,
+			48, 48,
+			44, 42,
+			45, 31,
+			53, 26,
+			49, 19,
+			53, 13,
+			53, 3,
+			51, -1,
+			59, -8,
+			49, -12,
+			47, -16,
+			54, -39,
+			37, -34,
+			36, -53,
+			30, -70,
+			24, -56,
+			18, -42,
+			4, -58
 		};
-		*/
+
+		CreateLoop(App->input->GetMouseX(), App->input->GetMouseY(), rick_head, 78);
+		
 	}
 
 	if(App->input->GetKey(SDL_SCANCODE_F1) == KEY_DOWN)
@@ -200,4 +218,93 @@ bool ModulePhysics::CleanUp()
 	delete world;
 
 	return true;
+}
+
+b2Body* ModulePhysics::CreateCircle(int x, int y, float rad) {
+	b2BodyDef body;
+	body.type = b2_dynamicBody;
+	float radius = PIXEL_TO_METERS(rad);
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+
+	b2Body* b = world->CreateBody(&body);
+
+	b2CircleShape shape;
+	shape.m_radius = radius;
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+
+	b->CreateFixture(&fixture);
+	
+	return b;
+}
+
+b2Body* ModulePhysics::CreateRectangle(int x, int y, int w, int h) {
+	b2BodyDef body;
+	body.type = b2_dynamicBody;
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+
+	b2Body* b = world->CreateBody(&body);
+
+	b2PolygonShape shape;
+	shape.SetAsBox(PIXEL_TO_METERS(w/2), PIXEL_TO_METERS(h/2));
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+
+	fixture.density = 1.0f;
+
+	b->CreateFixture(&fixture);
+
+	return b;
+}
+
+b2Body* ModulePhysics::CreateChain(int x, int y, int* points, int length) {
+	int half_length = length / 2;
+	b2Vec2* vertices = (b2Vec2*)malloc(half_length * sizeof(b2Vec2));
+
+	for (uint i = 0; i < half_length; i++) {
+		vertices[i].Set(PIXEL_TO_METERS(points[i * 2]), PIXEL_TO_METERS(points[i * 2 + 1]));
+	}
+
+	b2BodyDef body;
+	body.type = b2_dynamicBody;
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+
+	b2Body* b = world->CreateBody(&body);
+
+	b2ChainShape shape;
+	shape.CreateChain(vertices, half_length);
+
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+
+	fixture.density = 1.0f;
+	b->CreateFixture(&fixture);
+
+	return b;
+}
+
+b2Body* ModulePhysics::CreateLoop(int x, int y, int* points, int length) {
+	int half_length = length / 2;
+	b2Vec2* vertices = (b2Vec2*)malloc(half_length * sizeof(b2Vec2));
+
+	for (uint i = 0; i < half_length; i++) {
+		vertices[i].Set(PIXEL_TO_METERS(points[i * 2]), PIXEL_TO_METERS(points[i * 2 + 1]));
+	}
+
+	b2BodyDef body;
+	body.type = b2_dynamicBody;
+	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+
+	b2Body* b = world->CreateBody(&body);
+
+	b2ChainShape shape;
+	shape.CreateLoop(vertices, half_length);
+
+	b2FixtureDef fixture;
+	fixture.shape = &shape;
+
+	fixture.density = 1.0f;
+	b->CreateFixture(&fixture);
+
+	return b;
 }

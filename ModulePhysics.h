@@ -32,6 +32,10 @@ public:
 	bool CleanUp();
 
 	// TODO 4: Move body creation to 3 functions to create circles, rectangles and chains
+	b2Body* CreateCircle(int posX, int posY, float rad);
+	b2Body* CreateRectangle(int x, int y, int w, int h);
+	b2Body* CreateChain(int x, int y, int* points, int length);
+	b2Body* CreateLoop(int x, int y, int* points, int length);
 
 private:
 
